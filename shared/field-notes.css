@@ -1,0 +1,8 @@
+/*
+ * Nasdanika Field Notes: the series name at the top left, in place of the Zephyr Books' name.
+ * Appended after the runtime's zephyr-bridge.css by the zephyr profile, so this rule wins.
+ */
+#header::before,
+#toc.toc2::before {
+	content: "Nasdanika Field Notes";
+}

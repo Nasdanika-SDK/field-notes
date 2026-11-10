@@ -1,0 +1,23 @@
+= Cross-Resource Containment in EMF: A Nasdanika Field Note
+Pavel Vlasov
+:description: In EMF, a contained object can live in a resource of its own. What containment proxies do on saving, loading, moving and iterating, what changes without them, and what generated code needs.
+:keywords: EMF, Eclipse Modeling Framework, Ecore, containment proxies, cross-resource containment, cross-document containment, resolveProxies, XMI, Xcore, GenModel
+:lang: en
+:sectnums:
+:toc:
+:toclevels: 2
+:title-page:
+:listing-caption: Listing
+:table-caption: Table
+:source-language: java
+:tabsize: 4
+:hide-uri-scheme:
+:fieldnotes-repo: https://github.com/Nasdanika-SDK/field-notes
+:note-path: emf/cross-resource-containment
+// Defaults for previews in an editor; the Maven build sets these
+ifndef::fieldnotes-root[:fieldnotes-root: ../../../../..]
+ifndef::runtime-version[:runtime-version: 2026.10.0]
+
+include::article.adoc[]
+
+include::{fieldnotes-root}/shared/about-note.adoc[]

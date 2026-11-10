@@ -1,0 +1,26 @@
+// The last section of every note printed on its own. The collection has a colophon instead.
+// A note sets note-path, its directory in the repository.
+
+[appendix]
+== About this note
+
+This note is one of the Nasdanika Field Notes: short articles about the technologies and services
+Nasdanika is built and published with, each one verified by a test where it can be. Every listing of
+code in a note is included from its tests, every file shown was written by them when this edition
+was built, and the versions it was tested with are measured by the tests, not declared. A recipe
+says which of its steps the build checks and which are done by hand.
+
+Edition {revnumber}, built on {revdate}, with the third-party versions of the Nasdanika SDK Runtime
+{runtime-version}. The source of this note and its tests are at {fieldnotes-repo}, in
+`{note-path}`.
+
+Copyright (C) 2026 Pavel Vlasov.
+
+The text of this note is licensed under the
+https://creativecommons.org/licenses/by/4.0/[Creative Commons Attribution 4.0 International License]
+(CC BY 4.0). The code is licensed under the Eclipse Public License 2.0. In addition, you may use the
+code of the listings in your own programs and documentation without asking for permission and
+without attribution. Neither license covers the Nasdanika name or logo.
+
+Names of products and technologies, such as Eclipse and Java, may be trademarks of their owners.
+Their use here identifies the technologies discussed and implies no endorsement.

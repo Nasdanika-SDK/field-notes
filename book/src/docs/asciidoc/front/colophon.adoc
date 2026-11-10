@@ -1,0 +1,32 @@
+[colophon]
+== Colophon
+
+*Nasdanika Field Notes: Third-Party Behavior, Verified by Tests*
+
+Edition {revnumber}, built on {revdate}.
+
+This edition was tested with the third-party versions of the Nasdanika SDK Runtime
+{runtime-version}. Every listing in it is included from the notes' tests, and every file shown was
+written by them when this edition was built. Each note ends with the versions its tests ran against.
+
+Copyright (C) 2026 Pavel Vlasov.
+
+The text of this book is licensed under the
+https://creativecommons.org/licenses/by/4.0/[Creative Commons Attribution 4.0 International License]
+(CC BY 4.0). You may share and adapt it for any purpose, commercial purposes included, provided you
+give appropriate credit, provide a link to the license, and indicate if you made changes. A
+suggested credit: "Pavel Vlasov, _Nasdanika Field Notes_, licensed under CC BY 4.0", with a link to
+{fieldnotes-repo}.
+
+The code is licensed under the Eclipse Public License 2.0. In addition, you may use the code of this
+book's listings in your own programs and documentation without asking for permission and without
+attribution.
+
+Neither license covers the Nasdanika name or logo: CC BY 4.0 grants no trademark rights.
+
+Names of products and technologies, such as Eclipse and Java, may be trademarks of their owners.
+Their use here identifies the technologies discussed and implies no endorsement.
+
+The source of this book and the notes' tests are at {fieldnotes-repo}.
+
+Typeset with Asciidoctor PDF in Noto Sans and M+ 1mn, in the look of the Nasdanika Zephyr Books.

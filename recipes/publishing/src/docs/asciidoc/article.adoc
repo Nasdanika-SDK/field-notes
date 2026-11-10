@@ -1,0 +1,228 @@
+// The body of the recipe. index.adoc includes it as an article, and the collection includes it as a
+// chapter. Ids are prefixed with pub- because the collection is one document.
+
+[.lead]
+One book, built once, can be a citable record with a DOI, an ebook readers can pay what they want
+for, a page anyone can open, and a printed copy someone can write in. Each service that provides one
+of those documents itself well. This recipe is about what none of them documents: how they connect,
+in which order, and what flows from one into another.
+
+ifdef::editor-notes[]
+[IMPORTANT,caption="Editor's note"]
+====
+A draft, written from the services' documentation and the plan, before the first release that
+follows it end to end (2026.10.0). Revise every step after performing it, and record the date in
+<<pub-status>>. Diagrams to come: the parts and what flows between them, and the order of the steps.
+====
+endif::[]
+
+[#pub-why]
+== Why
+
+Readers want a book in different forms, for different reasons:
+
+* Some want to read it now, in a browser, without an account.
+* Some want it on an e-reader, and some want to pay for it, to support the work or because paying is
+  how they value it.
+* Some want it on paper: to read away from a screen, to keep beside the keyboard, to write in the
+  margins.
+* Researchers want to cite it, which needs an identifier that outlives every link.
+* Build tools want it next to the code it describes, at the same version.
+
+No single service does all of that. Leanpub sells ebooks and does not print. Lulu prints and does not
+mint DOIs. Zenodo archives and mints DOIs and does not sell. GitHub releases are easy to link to and
+are not an archive. So the book goes to several of them, and the work is in the connections:
+
+* **One source, one build.** Every edition comes from the same AsciiDoc and the same build, so the
+  editions cannot drift apart.
+* **Identifiers flow back into the book.** The DOI is reserved before the build so that the book can
+  print it; the ISBN is assigned before the print edition so that its copyright page can carry it.
+* **Each part does what it is best at**, and the book links to one place that lists them all.
+
+This is a recipe, not a framework. To leave a part out, fork the recipe and delete the steps, or
+choose the parts with flags, as <<pub-choosing>> shows.
+
+[#pub-what]
+== What: the parts and what each one gives
+
+[cols="3,4,3",options="header"]
+|===
+| Feature | What it gives | Provided by
+
+| One source, tested listings
+| A book that cannot claim what its code does not do: listings are regions of tests, and a warning fails the build
+| AsciiDoc, Asciidoctor, Maven, the tests
+
+| PDF for screens
+| Reading with links and search; the edition for Leanpub and the archive
+| Asciidoctor PDF, the screen layout
+
+| PDF for print
+| Mirrored margins and chapters that start on a right-hand page, for a bound book
+| Asciidoctor PDF, the `prepress` media
+
+| EPUB
+| Reflowing text for e-readers
+| Asciidoctor EPUB3
+
+| Single-page HTML
+| The whole book in one file anyone can open, with no account
+| Asciidoctor HTML5
+
+| A trim both print services offer
+| One print PDF for Lulu and, if ever needed, KDP: 189 by 246 mm (Crown Quarto, 7.44 by 9.69 inches)
+| The PDF theme
+
+| A link anyone can open, per version
+| The book's files beside the release's source
+| GitHub releases
+
+| The book next to the code, permanently
+| The PDF and HTML as artifacts with the classifier `book`, for builds and for readers of old versions
+| Maven Central
+
+| A DOI per version, and one for all versions
+| Citation that outlives links; the version DOI printed in the book, the concept DOI in the README
+| Zenodo
+
+| "Cite this repository"
+| A citation in the formats reference managers read
+| `CITATION.cff`, read by GitHub and Zenodo
+
+| Pay what you want, free included
+| A minimum price of zero with a suggested price; readers who pay support the work
+| Leanpub
+
+| Updates for readers
+| Readers get each new version, and an email with the release notes
+| Leanpub
+
+| Several books as one purchase
+| A bundle of related books
+| Leanpub
+
+| Printed copies on demand
+| Paper for those who want it, with no stock and no upfront cost
+| Lulu
+
+| Paper, ink and binding
+| Uncoated paper that takes a pencil and has no glare; standard color for headings and diagrams; paperback, coil binding that lies flat, or hardcover
+| Lulu
+
+| Retail distribution
+| The printed book listed in stores, Amazon included
+| Lulu's distribution, with an ISBN
+
+| One publisher name on every edition
+| The imprint, not the platform, as publisher
+| ISBNs from Bowker
+
+| One stable link in the book
+| A page that lists every edition and store; store links change, a released book does not
+| The project's site
+|===
+
+[#pub-how]
+== How: the steps, in order
+
+The order matters where an identifier flows into the book: what the book prints must exist before
+the book is built.
+
+=== Once
+
+. **Accounts.** Zenodo, Leanpub, Lulu and GitHub. On Leanpub, create the book as a "Bring Your Own
+  Book" title, which hosts and sells files built elsewhere.
+. **ISBNs**, if a print edition will be distributed. Bowker sells them in the United States, under
+  the publisher name of your choice. Each format needs its own: paperback, hardcover and ebook are
+  three ISBNs.
+. **`CITATION.cff`** in the repository, with the concept DOI once the first record exists.
+. **The "Get the books" page** on the project's site: every edition and store, and the DOIs. The
+  book links to this page rather than to the stores.
+
+=== Every release
+
+. **Reserve the DOI.** Create a draft record through Zenodo's REST API with a pre-reserved DOI. Pass
+  the DOI to the build as an attribute, so that the colophon prints it.
+. **Build.** One build renders the screen PDF, the EPUB and the HTML; a second renders the print PDF
+  with the `prepress` media. Leave the editor's notes out.
+. **Check** what a person would otherwise find too late: the page size of the print PDF, that every
+  font is embedded, that links resolve, and, for a black and white edition, a grayscale proof, since
+  colors that tell things apart may print as one gray.
+. **Zenodo.** Upload the PDF, the EPUB, the HTML and the source archive to the draft, and publish it.
+  The record now has the version DOI the book prints, and the concept DOI resolves to it.
+. **GitHub release.** Attach the same files to the release of the tag.
+. **Maven Central.** The release build attaches the PDF and the HTML with the classifier `book`.
+. **Leanpub.** Upload the PDF and the EPUB as a new version, then email the readers with the release
+  notes; uploading and emailing are separate steps. Keep the minimum price at zero.
+. **Lulu.** Revise the print project: the interior is the print PDF; the cover comes from Lulu's
+  cover template for the page count, because the spine width depends on it. Choose trim, binding,
+  ink, paper and cover finish once, and keep them, so that every printing is recognizably the same
+  book. Order a proof copy before the first edition and after any change to paper or ink.
+. **The "Get the books" page.** Add the version, its DOI and the new store pages.
+
+ifdef::editor-notes[]
+[IMPORTANT,caption="Editor's note"]
+====
+To verify by doing: whether a Lulu project keeps its product page URL across revisions, and so
+whether the book can link to it directly; whether Lulu's distribution reaches Kindle; whether the
+Zenodo GitHub integration archives a release's attached files. Decide matte or gloss with proof
+copies, not in advance.
+====
+endif::[]
+
+[#pub-choosing]
+== Choosing the parts
+
+A book that does not need a DOI, or a print edition, leaves those parts out. There are two ways.
+
+**Fork and edit.** Copy the recipe and delete the parts. Simple, and the copy no longer follows
+changes to the recipe.
+
+**Flags.** Guard the text that depends on a part with an attribute, and set the attributes in the
+book's header or from the build:
+
+[source,asciidoc]
+----
+:channel-zenodo:
+:channel-lulu:
+
+\ifdef::channel-zenodo[]
+Cite this edition as {doi}.
+\endif::[]
+----
+
+The build is the safety net. A cross-reference into a section that a flag removed is reported by
+Asciidoctor as a possibly invalid reference, and when warnings fail the build, a book with a broken
+cross-reference does not build.
+
+[#pub-status]
+== Status of this recipe
+
+[cols="3,2,3",options="header"]
+|===
+| Step | Checked by | Last performed
+
+| Build: PDF, print PDF, EPUB, HTML | The build | Every build
+| Page size, fonts, links | Not yet automated | Not yet
+| Zenodo: reserve, upload, publish | By hand, or a script against the Zenodo sandbox | Not yet
+| GitHub release | By hand | Not yet
+| Maven Central | The release build | Not yet for a book of this repository
+| Leanpub: upload, email | By hand; the API cannot upload to a "Bring Your Own Book" title | Not yet
+| Lulu: interior, cover, proof | By hand | Not yet
+|===
+
+[#pub-sources]
+== Sources
+
+* Zenodo's REST API documentation, https://developers.zenodo.org, for drafts, pre-reserved DOIs and
+  publishing. Zenodo runs a sandbox at https://sandbox.zenodo.org for trying the steps without
+  minting real DOIs.
+* Asciidoctor PDF's documentation, https://docs.asciidoctor.org/pdf-converter/latest/, for the
+  `media` attribute and themes.
+* Lulu's help center, https://help.lulu.com, for trims, paper, binding, cover templates and
+  distribution.
+* Leanpub's author help, for "Bring Your Own Book" titles, pricing and emailing readers.
+* Bowker's ISBN store, https://www.myidentifiers.com.
+* The Citation File Format, https://citation-file-format.github.io.
+* The decisions behind the choices here, such as the trim, the paper and the order of the editions,
+  are in the Nasdanika SDK Runtime's book and its `doc/book/README.md`.

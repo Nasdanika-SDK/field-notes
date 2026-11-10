@@ -1,0 +1,377 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	child.project.url.inherit.append.path="false">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.nasdanika.sdk.fieldnotes</groupId>
+	<artifactId>parent</artifactId>
+	<!-- The release of the Nasdanika SDK Runtime whose BOM the notes are tested against -->
+	<version>2026.10.0</version>
+	<packaging>pom</packaging>
+	<name>Nasdanika Field Notes</name>
+	<description>Short articles about the technologies under Nasdanika, each one verified by a test.</description>
+	<url>https://github.com/Nasdanika-SDK/field-notes</url>
+
+	<licenses>
+		<license>
+			<name>Eclipse Public License 2.0</name>
+			<url>https://nasdanika.org/builds/master/eclipse-public-license-2.0.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<scm child.scm.url.inherit.append.path="false">
+		<url>https://github.com/Nasdanika-SDK/field-notes</url>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>pvlasov</id>
+			<name>Pavel Vlasov</name>
+			<email>Pavel.Vlasov@nasdanika.org</email>
+			<roles>
+				<role>Lead Developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+	</developers>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!--
+			Third-party versions come from the runtime's BOM. The default is the release with the
+			notes' own version; the canary build overrides it with the runtime under development:
+
+				mvn verify -Dnasdanika.runtime.version=<version installed from the runtime>
+		-->
+		<nasdanika.runtime.version>${project.version}</nasdanika.runtime.version>
+
+		<!--
+			The look and the NBOK appendix come from the runtime release, unpacked by the zephyr profile
+			below from org.nasdanika.sdk.runtime.doc:zephyr and :nbok.
+		-->
+		<fieldnotes.root>${maven.multiModuleProjectDirectory}</fieldnotes.root>
+		<nasdanika.doc.dir>${project.build.directory}/nasdanika</nasdanika.doc.dir>
+		<zephyr.dir>${nasdanika.doc.dir}/zephyr</zephyr.dir>
+		<nbok.dir>${nasdanika.doc.dir}/nbok</nbok.dir>
+		<zephyr.editor-notes>true</zephyr.editor-notes>
+		<!-- A note is an article; the collection overrides this with book -->
+		<zephyr.doctype>article</zephyr.doctype>
+		<zephyr.book.name>${project.artifactId}-${project.version}-note</zephyr.book.name>
+		<asciidoctor.skip>false</asciidoctor.skip>
+		<zephyr.asciidoctor.maven.plugin.version>3.2.0</zephyr.asciidoctor.maven.plugin.version>
+		<zephyr.asciidoctorj.version>3.0.1</zephyr.asciidoctorj.version>
+		<zephyr.asciidoctorj.pdf.version>2.3.27</zephyr.asciidoctorj.pdf.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.nasdanika.sdk.runtime</groupId>
+				<artifactId>bom</artifactId>
+				<version>${nasdanika.runtime.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.nasdanika.sdk.fieldnotes</groupId>
+				<artifactId>support</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>6.1.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>6.1.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>3.27.7</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.6.3</version>
+				<executions>
+					<execution>
+						<id>enforce</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>3.9.16</version>
+								</requireMavenVersion>
+								<!--
+									The notes are about third-party technologies: they take their
+									versions from the runtime's BOM, never its code.
+								-->
+								<bannedDependencies>
+									<excludes>
+										<exclude>org.nasdanika*</exclude>
+									</excludes>
+									<includes>
+										<include>org.nasdanika.sdk.fieldnotes*</include>
+									</includes>
+								</bannedDependencies>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.16.0</version>
+				<configuration>
+					<release>25</release>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.6.0</version>
+				<configuration>
+					<systemPropertyVariables>
+						<!-- Where a note's tests write their evidence and the versions they ran against -->
+						<fieldnotes.target>${project.build.directory}</fieldnotes.target>
+						<nasdanika.runtime.version>${nasdanika.runtime.version}</nasdanika.runtime.version>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.4.2</version>
+				<configuration>
+					<!-- A note has tests and no main code -->
+					<skipIfEmpty>true</skipIfEmpty>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<!--
+			Nasdanika Field Notes, in the look of the Nasdanika Zephyr Books.
+
+			A module with src/docs/asciidoc/index.adoc gets this profile. After the tests pass, the
+			package phase renders target/book/<zephyr.book.name>.pdf and .html and attaches them with
+			the classifier book. A note is an article; the collection in book/ is a book.
+
+			The tests run first because a note includes what they write: its evidence, and the
+			versions it ran against, in target/tested-with.adoc.
+
+			The look and the NBOK appendix are unpacked from the runtime release into
+			target/nasdanika, so they must be in a Maven repository: Central for a release, or the
+			local repository after mvn install in the runtime's doc/zephyr and doc/nbok.
+
+			Skip rendering:     -Dasciidoctor.skip=true
+			Without notes:      -Dzephyr.editor-notes=false
+		-->
+		<profile>
+			<id>zephyr</id>
+			<activation>
+				<file>
+					<exists>${basedir}/src/docs/asciidoc/index.adoc</exists>
+				</file>
+			</activation>
+			<properties>
+				<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<!-- The look and the NBOK appendix of the runtime release; declared first, so it runs before the stylesheet is put together -->
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<version>3.11.0</version>
+						<executions>
+							<execution>
+								<id>unpack-nasdanika-doc</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>org.nasdanika.sdk.runtime.doc</groupId>
+											<artifactId>zephyr</artifactId>
+											<version>${nasdanika.runtime.version}</version>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.nasdanika.sdk.runtime.doc</groupId>
+											<artifactId>nbok</artifactId>
+											<version>${nasdanika.runtime.version}</version>
+										</artifactItem>
+									</artifactItems>
+									<excludes>META-INF/**</excludes>
+									<outputDirectory>${nasdanika.doc.dir}</outputDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<!-- Bootswatch Zephyr, the bridge and the series name in one stylesheet, for Asciidoctor to embed -->
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>3.1.0</version>
+						<executions>
+							<execution>
+								<id>zephyr-stylesheet</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<concat destfile="${project.build.directory}/zephyr/zephyr.css" encoding="UTF-8" outputencoding="UTF-8" fixlastline="yes">
+											<filelist dir="${zephyr.dir}/css" files="bootstrap.min.css,zephyr-logo.css,zephyr-bridge.css"/>
+											<filelist dir="${fieldnotes.root}/shared" files="field-notes.css"/>
+										</concat>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.asciidoctor</groupId>
+						<artifactId>asciidoctor-maven-plugin</artifactId>
+						<version>${zephyr.asciidoctor.maven.plugin.version}</version>
+						<dependencies>
+							<dependency>
+								<groupId>org.asciidoctor</groupId>
+								<artifactId>asciidoctorj</artifactId>
+								<version>${zephyr.asciidoctorj.version}</version>
+							</dependency>
+							<dependency>
+								<groupId>org.asciidoctor</groupId>
+								<artifactId>asciidoctorj-pdf</artifactId>
+								<version>${zephyr.asciidoctorj.pdf.version}</version>
+							</dependency>
+						</dependencies>
+						<configuration>
+							<sourceDirectory>${project.basedir}/src/docs/asciidoc</sourceDirectory>
+							<sourceDocumentName>index.adoc</sourceDocumentName>
+							<outputDirectory>${project.build.directory}/book</outputDirectory>
+							<doctype>${zephyr.doctype}</doctype>
+							<logHandler>
+								<outputToConsole>true</outputToConsole>
+								<failIf>
+									<severity>WARN</severity>
+								</failIf>
+							</logHandler>
+							<attributes>
+								<revnumber>${project.version}</revnumber>
+								<revdate>${maven.build.timestamp}</revdate>
+								<runtime-version>${nasdanika.runtime.version}</runtime-version>
+								<module-name>${project.name}</module-name>
+								<fieldnotes-root>${fieldnotes.root}</fieldnotes-root>
+								<nbok-dir>${nbok.dir}</nbok-dir>
+								<group-id>${project.groupId}</group-id>
+								<artifact-id>${project.artifactId}</artifact-id>
+								<editor-notes>${zephyr.editor-notes}</editor-notes>
+								<source-highlighter>rouge</source-highlighter>
+								<sectanchors>true</sectanchors>
+								<idprefix />
+								<idseparator>-</idseparator>
+								<xrefstyle>short</xrefstyle>
+								<experimental>true</experimental>
+							</attributes>
+						</configuration>
+						<executions>
+							<execution>
+								<id>zephyr-pdf</id>
+								<phase>package</phase>
+								<goals>
+									<goal>process-asciidoc</goal>
+								</goals>
+								<configuration>
+									<backend>pdf</backend>
+									<outputFile>${zephyr.book.name}.pdf</outputFile>
+									<attributes>
+										<pdf-themesdir>${zephyr.dir}/themes</pdf-themesdir>
+										<pdf-theme>zephyr</pdf-theme>
+										<icons>font</icons>
+									</attributes>
+								</configuration>
+							</execution>
+							<execution>
+								<id>zephyr-html</id>
+								<phase>package</phase>
+								<goals>
+									<goal>process-asciidoc</goal>
+								</goals>
+								<configuration>
+									<backend>html5</backend>
+									<outputFile>${zephyr.book.name}.html</outputFile>
+									<attributes>
+										<!-- Airtight: icons stay unset, so no icon font from a CDN; admonitions are labeled -->
+										<stylesdir>${project.build.directory}/zephyr</stylesdir>
+										<stylesheet>zephyr.css</stylesheet>
+										<toc>left</toc>
+										<toclevels>3</toclevels>
+										<data-uri>true</data-uri>
+									</attributes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>3.6.2</version>
+						<executions>
+							<execution>
+								<id>attach-zephyr-book</id>
+								<phase>package</phase>
+								<goals>
+									<goal>attach-artifact</goal>
+								</goals>
+								<configuration>
+									<skipAttach>${asciidoctor.skip}</skipAttach>
+									<artifacts>
+										<artifact>
+											<file>${project.build.directory}/book/${zephyr.book.name}.pdf</file>
+											<type>pdf</type>
+											<classifier>book</classifier>
+										</artifact>
+										<artifact>
+											<file>${project.build.directory}/book/${zephyr.book.name}.html</file>
+											<type>html</type>
+											<classifier>book</classifier>
+										</artifact>
+									</artifacts>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<modules>
+		<module>support</module>
+		<module>emf</module>
+		<module>recipes</module>
+		<module>book</module>
+	</modules>
+</project>

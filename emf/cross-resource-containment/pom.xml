@@ -1,0 +1,36 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.nasdanika.sdk.fieldnotes</groupId>
+		<artifactId>emf</artifactId>
+		<version>2026.10.0</version>
+	</parent>
+	<groupId>org.nasdanika.sdk.fieldnotes.emf</groupId>
+	<artifactId>cross-resource-containment</artifactId>
+	<name>Cross-Resource Containment in EMF</name>
+	<description>A contained object can live in a resource of its own: containment proxies, what they do on saving and loading, and what changes without them.</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.ecore</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.common</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.nasdanika.sdk.fieldnotes</groupId>
+			<artifactId>support</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

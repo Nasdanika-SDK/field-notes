@@ -1,0 +1,54 @@
+= Nasdanika Field Notes: Third-Party Behavior, Verified by Tests
+Pavel Vlasov
+:doctype: book
+:description: Short articles about the technologies under Nasdanika, such as EMF, OpenTelemetry and the JVM, each one verified by a test that runs with every release of the Nasdanika SDK Runtime.
+:keywords: EMF, Eclipse Modeling Framework, OpenTelemetry, JVM, Java, learning tests, Nasdanika
+:lang: en
+:sectnums:
+:sectnumlevels: 2
+:partnums:
+:chapter-signifier: Chapter
+:part-signifier: Part
+:appendix-caption: Appendix
+:toc:
+:toclevels: 2
+:title-page:
+:listing-caption: Listing
+:table-caption: Table
+:source-language: java
+:tabsize: 4
+:hide-uri-scheme:
+:fieldnotes-repo: https://github.com/Nasdanika-SDK/field-notes
+// Defaults for previews in an editor; the Maven build sets these
+ifndef::fieldnotes-root[:fieldnotes-root: ../../../..]
+ifndef::runtime-version[:runtime-version: 2026.10.0]
+ifndef::nbok-dir[:nbok-dir: ../../../target/nasdanika/nbok]
+
+include::front/colophon.adoc[]
+
+include::front/preface.adoc[]
+
+[#emf]
+= EMF
+
+[partintro]
+The Eclipse Modeling Framework: metamodels, model objects, and the resources they are saved in.
+
+[#cross-resource-containment]
+== Cross-Resource Containment
+
+include::{fieldnotes-root}/emf/cross-resource-containment/src/docs/asciidoc/article.adoc[leveloffset=+1]
+
+[#recipes]
+= Recipes
+
+[partintro]
+How parts fit together. Each service documents itself; a recipe documents the connections between
+them, and says which of its steps the build checks and which are done by hand.
+
+[#publishing]
+== Publishing a Book
+
+include::{fieldnotes-root}/recipes/publishing/src/docs/asciidoc/article.adoc[leveloffset=+1]
+
+include::{nbok-dir}/nbok-appendix.adoc[]

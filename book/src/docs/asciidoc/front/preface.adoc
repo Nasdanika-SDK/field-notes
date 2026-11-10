@@ -1,0 +1,42 @@
+[preface]
+== Preface
+
+Every project stands on technologies it did not write, and on beliefs about how they behave. Most of
+those beliefs are right. Some are right by default and wrong in a case that matters. A few were
+never right, and survive because nobody wrote them down where a test could check them.
+
+A field note is one such belief, written down and checked. It states the belief, gives the answer,
+and shows the evidence: a test, its listings, and the files it wrote. Then it lists the consequences
+for code that relies on the behavior, and the versions the test ran against. A note is short. It
+answers one question, the way a good gist does, but it cannot go stale silently, because its test
+runs every time the book is built.
+
+The idea is an old one. _Clean Code_ calls these learning tests, after Jim Newkirk: tests that
+pin down how a third-party API behaves, written while learning it, and kept, so that an upgrade that
+changes the behavior fails a test instead of an application.
+
+=== What the notes are about
+
+The notes are about the technologies and services the Nasdanika SDK is built and published with,
+such as EMF, OpenTelemetry and the JVM. Their code depends on those technologies only, not on
+Nasdanika, so a note is useful to anyone who uses the technology it describes.
+
+Recipes are notes about how the parts fit together, such as publishing a book with Zenodo, Leanpub
+and Lulu. Each service documents itself; a recipe documents the connections between them, which no
+single service does. Not every step of a recipe can be tested, so a recipe says which steps the
+build checks and which are done by hand, and when they were last done.
+
+=== How they are kept honest
+
+* **The versions are Nasdanika's.** The notes take every third-party version from the BOM of the
+  Nasdanika SDK Runtime. Each runtime release is built against the notes, so the notes test the
+  assumptions the runtime makes about its dependencies, at the versions it ships.
+* **The versions are measured.** A note's tests record the versions of the jars they actually
+  loaded, and the note includes that record. A note cannot claim versions it did not run against.
+* **What is read rather than tested is marked.** When a note relies on reading a library's source
+  rather than on a test, it says so.
+
+=== How to read them
+
+Each note stands on its own, and they can be read in any order. The parts group them by technology.
+Each note is also printed on its own, as a short article, from the same source.

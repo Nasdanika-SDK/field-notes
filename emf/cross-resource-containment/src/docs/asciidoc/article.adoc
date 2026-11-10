@@ -1,0 +1,294 @@
+// The body of the note. index.adoc includes it as an article, and the collection includes it as a
+// chapter. Paths are relative to this file, because Asciidoctor resolves an include against the file
+// that contains it, so they work in both.
+:crc-tests: ../../test/java/org/nasdanika/sdk/fieldnotes/emf/crossresource/CrossResourceContainmentTests.java
+:crc-target: ../../../target
+
+[.lead]
+In EMF, a contained object can be in a different resource from its container, and each object can be
+placed separately. This is called containment proxies, or cross-resource containment, and it is off
+by default, which is why the opposite is widely believed.
+
+== The belief
+
+Three beliefs about EMF resources are common, and all three are reasonable:
+
+* A contained object is always in its container's resource. To save an object in a file of its own,
+  it has to be a root of that file, referred to by a non-containment reference.
+* If a contained object was saved in another file, then loading resolves the reference and the
+  object moves into its container's resource, so the next save writes it inline.
+* A contained object saved in a file of its own cannot know its container when its file is loaded
+  alone, because its file is a file like any other.
+
+The first is true by default. The second is not true at all. The third is true only when the
+containment has no opposite, as this note shows.
+
+== The answer
+
+A containment reference whose `resolveProxies` is true, written `contains resolving` in Xcore, lets
+a contained object live in a resource of its own. The object keeps its container: `eContainer()` is
+the parent, and `eResource()` is the object's own resource, not the parent's.
+
+* **Saving** writes a reference in the parent's file, `<children href="child.xmi#/"/>`, and the
+  child in its own file.
+* **Loading** is lazy. The parent's file loads with a proxy in place of the child, and the first
+  access loads the child's file and replaces the proxy.
+* **Resolving does not move the child.** It stays in its own resource, and saving the parent writes
+  the reference again.
+* **Placement is per object.** Adding a contained object to another resource's contents splits it
+  out; removing it from its resource's contents moves it back into its container's resource.
+* **A container reference records the container.** When the containment has an opposite, a
+  container reference such as `parent`, the child's file refers back to the parent's file, and a
+  child loaded alone has its container, as a proxy that the first access resolves. Without an
+  opposite, the child's file has nothing about its container.
+
+Without `resolveProxies`, which is the default for containment, the first belief holds, and the
+same operations do something else: adding a contained object to a resource's contents removes it
+from its container.
+
+== The evidence
+
+The tests build a metamodel in code, a tree of nodes, so that nothing is generated:
+
+[source,java]
+----
+include::{crc-tests}[tag=metamodel,indent=0]
+----
+<1> Containment proxies are on when this is `true`, and off by default.
+
+=== Splitting an object out
+
+[source,java]
+----
+include::{crc-tests}[tag=split,indent=0]
+----
+<1> A new child is in its container's resource.
+<2> Adding it to another resource's contents...
+<3> ...keeps its container and changes its resource.
+<4> The parent's file refers to the child's file.
+
+The parent's file, with the reference:
+
+[source,xml]
+----
+include::{crc-target}/evidence/split-out/parent.xmi[]
+----
+
+The child's file, where the child is the root:
+
+[source,xml]
+----
+include::{crc-target}/evidence/split-out/child.xmi[]
+----
+
+=== Loading lazily, without moving
+
+The files are loaded into a new resource set:
+
+[source,java]
+----
+include::{crc-tests}[tag=load,indent=0]
+----
+<1> After loading, the parent's list holds a proxy, and only the parent's file is loaded.
+`basicGet` reads the list without resolving it.
+<2> Reading the list resolves the proxy and loads the child's file.
+<3> The child has its container and its own resource.
+<4> Saving the parent writes the reference again: the child did not move.
+
+=== Moving an object back
+
+[source,java]
+----
+include::{crc-tests}[tag=move-back,indent=0]
+----
+<1> Removing the child from its resource's contents...
+<2> ...moves it into its container's resource, and it keeps its container.
+<3> The child's resource is now empty, but its file is still on disk with the old copy until the
+resource is saved or deleted.
+<4> The parent's file now has the child inline.
+
+The parent's file after the move:
+
+[source,xml]
+----
+include::{crc-target}/evidence/move-back/parent.xmi[]
+----
+
+=== Iterating
+
+[source,java]
+----
+include::{crc-tests}[tag=iterate,indent=0]
+----
+<1> `EcoreUtil.getAllProperContents(resource, false)` stays in the resource and loads nothing, but
+it returns the unresolved proxy as an element.
+<2> `Resource.getAllContents()` on the parent's resource resolves the proxy, loads the child's file
+and returns the child.
+
+=== A child's file on its own
+
+[source,java]
+----
+include::{crc-tests}[tag=child-alone,indent=0]
+----
+
+A child's file loaded without its parent's gives a root with no container, because the tree so far
+has no container reference, and nothing in the child's file names its container.
+
+=== A container reference
+
+A container reference is the opposite of a containment reference: the containment goes from the
+parent to its children, and the container reference goes from a child to its parent. It is not a
+second link stored beside `eContainer()`. It is `eContainer()`, typed and named. The tests add one
+to the tree:
+
+[source,java]
+----
+include::{crc-tests}[tag=container-metamodel,indent=0]
+----
+<1> The two references are each other's opposites, which makes `parent` a container reference.
+<2> Whether reading `parent` resolves a proxy. The last test shows why it should.
+
+Setting either end sets the other, and the container reference changes what is saved only when the
+child is in a file of its own:
+
+[source,java]
+----
+include::{crc-tests}[tag=container,indent=0]
+----
+<1> Setting the container reference adds the child to the parent's `children`, and the child's
+`eContainer()` is the parent.
+<2> In the same file, the container reference is not saved: the nesting says it.
+<3> In a file of its own, the child refers back to its parent's file.
+
+The child's file:
+
+[source,xml]
+----
+include::{crc-target}/evidence/container/child.xmi[]
+----
+
+The child's file loaded alone, with a resolving container reference:
+
+[source,java]
+----
+include::{crc-tests}[tag=container-alone,indent=0]
+----
+<1> After loading, the child's container is a proxy, and only the child's file is loaded.
+`eGet(feature, false)` reads it without resolving it.
+<2> Reading the container reference resolves the proxy and loads the parent's file.
+<3> The parent's `children` resolve to the child already loaded, so the two ends agree, and the
+child stays in its own resource.
+
+With a container reference that does not resolve proxies, which is what Xcore's `container`
+declares without `resolving`, reading it returns the proxy. `eContainer()` resolves either way:
+
+[source,java]
+----
+include::{crc-tests}[tag=container-local,indent=0]
+----
+<1> The container reference returns the unresolved proxy and loads nothing.
+<2> `eContainer()` resolves it and loads the parent's file, after which the container reference
+returns the parent as well.
+
+=== Without containment proxies
+
+The same steps with `resolveProxies` off:
+
+[source,java]
+----
+include::{crc-tests}[tag=without,indent=0]
+----
+<1> Adding a contained object to another resource's contents removes it from its container.
+<2> Adding it to a container removes it from its resource.
+<3> So the parent's file always has the child inline.
+
+== Consequences
+
+* **Several files to save.** Saving the parent's resource does not save the child's. Save every
+  modified resource in the resource set.
+* **References are relative.** The `href` is relative to the parent's file, so moving files means
+  saving the parents again.
+* **A file left behind.** When a child moves back into its container's resource, its old resource
+  is empty and its file remains on disk with the old copy. Save the empty resource or delete it with
+  `Resource.delete(...)`.
+* **`eResource()` is not the root's resource.** Code that assumes that everything under a root is in
+  the root's resource breaks: for example, a check that `eResource() == root.eResource()`, or saving
+  only the root's resource.
+* **Iteration loads.** `Resource.getAllContents()` and `eAllContents()` load the children's files
+  as they go. That is what a walk over a whole model wants, and not what a quick look at one file
+  wants. `EcoreUtil.getAllProperContents(resource, false)` loads nothing, but returns unresolved
+  proxies, which the caller must expect.
+* **A child read alone has no container, unless the containment has an opposite.** Without one, a
+  tool that opens a child's file directly sees a root. With one, it sees a root that has a
+  container, and code that takes a root of a resource to be a root of the model breaks.
+* **Reading a container reference can load a file.** With a resolving container reference, so does
+  `eContainer()`, which resolves either way: walking up from a child loads its ancestors' files.
+  `eGet(feature, false)` reads the proxy without loading.
+* **Without containment proxies, adding is moving.** Adding a contained object to a resource's
+  contents silently detaches it from its container.
+
+== A rule
+
+A containment whose objects may be in files of their own works the same from either end when it has
+three things:
+
+* **`contains resolving`**, and the GenModel's `containmentProxies` for generated code (next
+  section), so that a contained object can be in a file of its own.
+* **A container reference as its opposite**, so that the object's file names its container. Without
+  one, a file loaded alone forgets where its object belongs.
+* **`container resolving`**, so that reading the container reference returns the container, the
+  same as `eContainer()`, and not a proxy.
+
+The cost is in the consequences above: more files to save, and loading that follows references in
+both directions.
+
+== Generated code
+
+The tests use a dynamic metamodel, where `resolveProxies` on the reference is all it takes.
+Generated code also needs the GenModel's `containmentProxies` attribute set to `true`; it is
+`false` by default. The generator treats a containment reference as resolving only when both are
+true. In Xcore:
+
+[source]
+----
+@GenModel(containmentProxies="true")
+package org.example.tree
+
+class Node {
+	String name
+	contains resolving Node[] children opposite parent
+	container resolving Node parent opposite children
+}
+----
+
+The generated getter of a container reference returns `null` unless the object is contained
+through the reference's opposite. Otherwise it returns `eContainer()`, which resolves, when the
+reference is resolving, and `eInternalContainer()`, which does not, when it is not.
+
+This section comes from reading EMF, not from a test, because the notes do not generate code yet:
+
+* `GenFeatureImpl.isResolveProxies()` in `org.eclipse.emf.codegen.ecore` 2.46.0 checks
+  `GenModel.isContainmentProxies()` and `EReference.isResolveProxies()`.
+* The getter's body is in the generator's `templates/model/Class.java`, in the same artifact.
+* The Xcore grammar in `org.eclipse.emf.ecore.xcore` 1.38.0 accepts `contains resolving` and
+  `container resolving`; without `resolving`, neither resolves proxies.
+
+== Tested with
+
+include::{crc-target}/tested-with.adoc[]
+
+== Sources
+
+* The tests in this note's module, which produced every listing and file above.
+* `BasicEObjectImpl.eSetResource(...)` and `BasicEObjectImpl.eBasicSetContainer(...)` in
+  `org.eclipse.emf.ecore`: both check `EReference.isResolveProxies()` to decide whether an object
+  leaves its resource when it gets a container, and whether it leaves its container when it is added
+  to a resource.
+* `BasicEObjectImpl.eContainer()` in `org.eclipse.emf.ecore`, which resolves a container proxy
+  whether or not any container reference resolves.
+* `XMLSaveImpl.writeTopElements(...)` in `org.eclipse.emf.ecore.xmi`, which writes a reference to
+  the container for a root that has one, when its containment has an opposite that is not
+  transient.
+* `GenModel.ecore` in `org.eclipse.emf.codegen.ecore`, for the `containmentProxies` attribute, and
+  `Xcore.xtext` in `org.eclipse.emf.ecore.xcore`, for `contains resolving`.

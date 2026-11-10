@@ -1,0 +1,40 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.nasdanika.sdk.fieldnotes</groupId>
+		<artifactId>parent</artifactId>
+		<version>2026.10.0</version>
+	</parent>
+	<artifactId>book</artifactId>
+	<packaging>pom</packaging>
+	<name>Nasdanika Field Notes Book</name>
+	<description>All the notes in one book, a part per technology.</description>
+
+	<properties>
+		<zephyr.doctype>book</zephyr.doctype>
+		<zephyr.book.name>nasdanika-field-notes-${project.version}</zephyr.book.name>
+	</properties>
+
+	<!--
+		The book includes each note's text and what its tests wrote to its target directory, so the
+		notes build first. A dependency on each note's POM orders the reactor without adding anything
+		to a class path.
+	-->
+	<dependencies>
+		<dependency>
+			<groupId>org.nasdanika.sdk.fieldnotes.emf</groupId>
+			<artifactId>cross-resource-containment</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.nasdanika.sdk.fieldnotes.recipes</groupId>
+			<artifactId>publishing</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+</project>
